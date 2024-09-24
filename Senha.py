@@ -6,43 +6,50 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 import time
 
-# Função para abrir o navegador e enviar o comando F9
+driver = None
+last_f9_press_time = 0  
+block_time = 5  # Intervalo mínimo entre dois cliques em F9 (aumentado para 5 segundos)
+
 def open_site_and_send_f9():
-    # Configurando as opções do Chrome
-    chrome_options = Options()
-    chrome_options.binary_location = r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
-    chrome_options.add_argument("--kiosk-printing")  # Ativa a impressão em modo quiosque
-    chrome_options.add_argument("--window-size=1920x1080")  # Define o tamanho da janela (opcional)
-    
-    # Coloca o navegador fora da tela (simulando "headless")
-    chrome_options.add_argument("--window-position=-10000,0")  # Posiciona a janela fora da tela visível
+    global driver
 
-    # Usando o ChromeDriverManager para baixar e configurar o ChromeDriver automaticamente
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)  # Configurando o navegador usando o webdriver-manager
-    driver.get("http://localhost/gerar_senha/")  # Substitua pelo URL do site que você quer abrir
-    
-    time.sleep(3)  # Espera o site carregar
+    if driver is None:
+        chrome_options = Options()
+        chrome_options.binary_location = r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
+        chrome_options.add_argument("--kiosk-printing")
+        chrome_options.add_argument("--window-size=1920x1080")
+        chrome_options.add_argument("--window-position=-10000,0")
 
-    # Enviar o comando F9 para a página
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        driver.get("http://192.168.0.137/gerar_senha/")
+        time.sleep(3)
+    else:
+        driver.refresh()
+
     body = driver.find_element("tag name", 'body')
     body.send_keys(Keys.F9)
     print("Processo de impressão iniciado...")
 
-    # Esperar um tempo antes de fechar (por exemplo, 10 segundos)
     print("Aguardando Impressão...")
-    time.sleep(5)  # Ajuste o tempo conforme necessário
+    time.sleep(10)  # Aumentado para 10 segundos
 
-    # Após o tempo de espera, o navegador é fechado
-    driver.quit()
-    print("Impressão Realizada.")
+    # Fechar a aba após a impressão
+    print("Fechando aba de impressão...")
+    driver.close()  
+    driver = None  # Reseta o driver
 
-# Função que detecta a tecla F9 e executa a ação
 def detect_f9_key():
-    while True:  # Loop infinito
+    global last_f9_press_time
+    while True:
         print("Aguardando a tecla F9...")
         keyboard.wait('F9')
-        open_site_and_send_f9()
 
-# Executa o detector de tecla F9
+        current_time = time.time()  
+        if current_time - last_f9_press_time >= block_time:
+            open_site_and_send_f9()  
+            last_f9_press_time = current_time
+        else:
+            print(f"F9 bloqueado, aguarde {block_time} segundos antes de tentar novamente.")
+
 detect_f9_key()
