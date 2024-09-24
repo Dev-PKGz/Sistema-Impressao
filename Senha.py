@@ -31,7 +31,7 @@ def open_site_and_send_f9():
 
     # Esperar um tempo antes de fechar (por exemplo, 10 segundos)
     print("Aguardando Impressão...")
-    time.sleep(10)  # Ajuste o tempo conforme necessário
+    time.sleep(5)  # Ajuste o tempo conforme necessário
 
     # Após o tempo de espera, o navegador é fechado
     driver.quit()
