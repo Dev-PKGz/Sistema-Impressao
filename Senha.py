@@ -8,7 +8,7 @@ import time
 
 driver = None
 last_f9_press_time = 0  
-block_time = 5  # Intervalo mínimo entre dois cliques em F9 (aumentado para 5 segundos)
+block_time = 5  # Intervalo mínimo entre dois cliques em F9
 
 def open_site_and_send_f9():
     global driver
@@ -19,6 +19,9 @@ def open_site_and_send_f9():
         chrome_options.add_argument("--kiosk-printing")
         chrome_options.add_argument("--window-size=1920x1080")
         chrome_options.add_argument("--window-position=-10000,0")
+        chrome_options.add_argument("--disable-software-rasterizer")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--log-level=3")
 
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=chrome_options)
@@ -33,11 +36,6 @@ def open_site_and_send_f9():
 
     print("Aguardando Impressão...")
     time.sleep(10)  # Aumentado para 10 segundos
-
-    # Fechar a aba após a impressão
-    print("Fechando aba de impressão...")
-    driver.close()  
-    driver = None  # Reseta o driver
 
 def detect_f9_key():
     global last_f9_press_time
